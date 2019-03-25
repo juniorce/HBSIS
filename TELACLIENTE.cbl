@@ -18,7 +18,7 @@
                   LOCK MODE     IS MANUAL
                   FILE STATUS   IS WC-FILE-STATUS.
 
-           SELECT IMP-CLIENTE   ASSIGN TO "impCliente.dat"
+           SELECT IMP-CLIENTE   ASSIGN TO "IMPCLIENTE.DAT"
                   ORGANIZATION  IS SEQUENTIAL
                   FILE STATUS   IS WI-FILE-STATUS.
 
