@@ -1,0 +1,171 @@
+       PROGRAM-ID.   REPORTCLIENTE AS "REPORTCLIENTE".
+       AUTHOR.       FRANCISCO.
+       DATE-WRITTEN. 21/03/2019.
+
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SPECIAL-NAMES.
+           DECIMAL-POINT IS COMMA.
+
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT ARQ-CLIENTE   ASSIGN TO DISK
+                  ORGANIZATION  IS INDEXED
+                  ACCESS MODE   IS SEQUENTIAL
+                  RECORD  KEY   IS COD-CLIENTE
+                  ALTERNATE RECORD KEY IS CNPJ
+                  LOCK MODE     IS MANUAL
+                  FILE STATUS   IS WC-FILE-STATUS.
+
+           SELECT ARQ-TEMP      ASSIGN TO "ARQTEMPORARIO.SRT"
+                  FILE STATUS   IS WT-FILE-STATUS.
+
+           SELECT REL-CLIENTE ASSIGN TO "RELCLIENTE.TXT"
+           ORGANIZATION IS LINE SEQUENTIAL.
+
+       DATA DIVISION.
+       FILE SECTION.
+       FD  ARQ-CLIENTE
+           LABEL RECORD IS STANDARD
+           VALUE OF FILE-ID IS 'cadCliente'.
+       COPY "CLIENTE.CPY".
+
+       SD  ARQ-TEMP.
+       01  REG-TEMPORARIO.
+           03 TEMP-COD-CLIENTE         PIC  9(007).
+           03 TEMP-CNPJ                PIC  9(014).
+           03 TEMP-RAZAO-SOCIAL        PIC  X(040).
+           03 TEMP-LATITUDE-CLIENTE    PIC S9(003)V9(008).
+           03 TEMP-LONGITUDE-CLIENTE   PIC S9(003)V9(008).
+       
+       FD  REL-CLIENTE.
+       01  REL-REGISTRO PIC X(100).
+
+       WORKING-STORAGE SECTION.
+       77 WC-FILE-STATUS    PIC  X(002) VALUE "00".
+       77 WT-FILE-STATUS    PIC  X(002) VALUE "00".
+       
+       01  W-CONTADORES.
+           03 W-CT-LINHAS        PIC  9(002) VALUE 99.
+       
+       01  W-CAB1.
+           03 FILLER PIC X(100) VALUE "RELATORIO CLIENTES CADASTRADOS".
+           
+       01  W-CAB2.
+           03 FILLER PIC X(13) VALUE "COD CLIENTE".
+           03 FILLER PIC X(16) VALUE "CNPJ".
+           03 FILLER PIC X(42) VALUE "RAZAO SOCIAL".
+           03 FILLER PIC X(15) VALUE "LATITUDE".
+           03 FILLER PIC X(13) VALUE "LONGITUDE".
+
+       01  W-DET1.
+           03 W-DET-CODIGO        PIC 9(007) VALUE ZEROS.
+           03 FILLER              PIC X(006) VALUE SPACES.
+           03 W-DET-CNPJ          PIC 9(014) VALUE ZEROS.
+           03 FILLER              PIC X(002) VALUE SPACES.
+           03 W-DET-RAZAO-SOCIAL  PIC X(040) VALUE SPACES.
+           03 FILLER              PIC X(002) VALUE SPACES.
+           03 W-DET-LATITUDE      PIC -ZZ9,99999999 VALUE ZEROS.
+           03 FILLER              PIC X(002) VALUE SPACES.
+           03 W-DET-LONGITUDE     PIC -ZZ9,99999999 VALUE ZEROS.
+       
+       01  W-SEPARADOR   PIC X(100) VALUE ALL "-".
+       
+       LINKAGE SECTION.
+       01 L-TIPO-ORDENACAO      PIC X VALUE SPACES.
+       01 L-TIPO-CLASSIFICACAO  PIC 9 VALUE ZEROS.
+       01 L-CODIGO-CLIENTE      PIC 9(007) VALUE ZEROS.
+       01 L-RAZAO-SOCIAL        PIC X(040) VALUE SPACES.
+
+       PROCEDURE DIVISION USING L-TIPO-ORDENACAO,
+                                L-TIPO-CLASSIFICACAO,
+                                L-CODIGO-CLIENTE,
+                                L-RAZAO-SOCIAL.
+       000-INICIO.
+           IF L-TIPO-ORDENACAO EQUAL TO "D"
+              IF L-TIPO-CLASSIFICACAO EQUAL TO 2
+                 SORT ARQ-TEMP
+                      ON DESCENDING KEY TEMP-RAZAO-SOCIAL               
+                      INPUT  PROCEDURE IS 100-PROCESSA-ENTRADA
+                      OUTPUT PROCEDURE IS 200-PROCESSA-SAIDA
+              ELSE
+                 SORT ARQ-TEMP
+                      ON DESCENDING KEY TEMP-COD-CLIENTE
+                      INPUT  PROCEDURE IS 100-PROCESSA-ENTRADA
+                      OUTPUT PROCEDURE IS 200-PROCESSA-SAIDA
+              END-IF
+           ELSE
+              IF L-TIPO-CLASSIFICACAO EQUAL TO 2
+                 SORT ARQ-TEMP
+                      ON ASCENDING KEY TEMP-RAZAO-SOCIAL
+                      INPUT  PROCEDURE IS 100-PROCESSA-ENTRADA
+                      OUTPUT PROCEDURE IS 200-PROCESSA-SAIDA
+              ELSE
+                 SORT ARQ-TEMP
+                      ON ASCENDING KEY TEMP-COD-CLIENTE
+                      INPUT  PROCEDURE IS 100-PROCESSA-ENTRADA
+                      OUTPUT PROCEDURE IS 200-PROCESSA-SAIDA
+              END-IF
+           END-IF
+       
+           CALL "MENU".
+       
+       100-PROCESSA-ENTRADA.
+           OPEN INPUT ARQ-CLIENTE 
+       
+           READ ARQ-CLIENTE
+           
+           PERFORM 110-SELECIONA-REGISTROS 
+             UNTIL WC-FILE-STATUS NOT EQUAL TO "00"
+             
+           CLOSE ARQ-CLIENTE.
+       
+       110-SELECIONA-REGISTROS.
+           IF L-CODIGO-CLIENTE EQUAL TO ZEROS
+              IF L-RAZAO-SOCIAL EQUAL TO SPACES
+                 RELEASE REG-TEMPORARIO FROM ARQ-CLIENTE-REG
+              ELSE
+                 IF RAZAO-SOCIAL EQUAL TO L-RAZAO-SOCIAL
+                    RELEASE REG-TEMPORARIO FROM ARQ-CLIENTE-REG
+                 END-IF
+              END-IF
+           ELSE
+              IF COD-CLIENTE EQUAL TO L-CODIGO-CLIENTE
+                 RELEASE REG-TEMPORARIO FROM ARQ-CLIENTE-REG
+              END-IF
+           END-IF
+       
+           READ ARQ-CLIENTE.
+
+       200-PROCESSA-SAIDA.
+           OPEN OUTPUT REL-CLIENTE
+           
+           RETURN ARQ-TEMP
+           
+           PERFORM 300-IMPRIMIR-RELATORIO 
+             UNTIL WT-FILE-STATUS NOT EQUAL "00"
+           
+           CLOSE REL-CLIENTE.
+           
+       300-IMPRIMIR-RELATORIO.
+           IF W-CT-LINHAS > 60
+              PERFORM 110-IMPRIMIR-CABECALHO
+           END-IF
+           
+           MOVE TEMP-COD-CLIENTE       TO W-DET-CODIGO
+           MOVE TEMP-CNPJ              TO W-DET-CNPJ
+           MOVE TEMP-RAZAO-SOCIAL      TO W-DET-RAZAO-SOCIAL
+           MOVE TEMP-LATITUDE-CLIENTE  TO W-DET-LATITUDE
+           MOVE TEMP-LONGITUDE-CLIENTE TO W-DET-LONGITUDE               
+
+           WRITE REL-REGISTRO FROM W-DET1 AFTER 1 LINE
+           ADD 1 TO W-CT-LINHAS
+
+           RETURN ARQ-TEMP.
+       
+       110-IMPRIMIR-CABECALHO.
+           WRITE REL-REGISTRO FROM W-CAB1 AFTER PAGE
+           WRITE REL-REGISTRO FROM W-CAB2  AFTER 1 LINE
+           WRITE REL-REGISTRO FROM W-SEPARADOR  AFTER 1 LINE.
+
+       END PROGRAM REPORTCLIENTE.

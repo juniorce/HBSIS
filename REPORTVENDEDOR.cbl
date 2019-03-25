@@ -1,0 +1,171 @@
+       PROGRAM-ID.   REPORTVENDEDOR AS "REPORTVENDEDOR".
+       AUTHOR.       FRANCISCO.
+       DATE-WRITTEN. 21/03/2019.
+
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SPECIAL-NAMES.
+           DECIMAL-POINT IS COMMA.
+
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT ARQ-VENDEDOR  ASSIGN TO DISK
+                  ORGANIZATION  IS INDEXED
+                  ACCESS MODE   IS SEQUENTIAL
+                  RECORD  KEY   IS COD-VENDEDOR
+                  ALTERNATE RECORD KEY IS CPF
+                  LOCK MODE     IS MANUAL
+                  FILE STATUS   IS WV-FILE-STATUS.
+
+           SELECT ARQ-TEMP      ASSIGN TO "ARQTEMPORARIO.SRT"
+                  FILE STATUS   IS WT-FILE-STATUS.
+
+           SELECT REL-VENDEDOR ASSIGN TO "RELVENDEDOR.txt"
+           ORGANIZATION IS LINE SEQUENTIAL.
+
+       DATA DIVISION.
+       FILE SECTION.
+       FD  ARQ-VENDEDOR
+           LABEL RECORD IS STANDARD
+           VALUE OF FILE-ID IS 'cadVendedor'.
+       COPY "VENDEDOR.CPY".
+
+       SD  ARQ-TEMP.
+       01  REG-TEMPORARIO.
+           03 TEMP-COD-VENDEDOR         PIC  9(003).
+           03 TEMP-CPF                  PIC  9(011).
+           03 TEMP-NOME-VENDEDOR        PIC  X(040).
+           03 TEMP-LATITUDE-VENDEDOR    PIC S9(003)V9(008).
+           03 TEMP-LONGITUDE-VENDEDOR   PIC S9(003)V9(008).
+           
+       FD  REL-VENDEDOR.
+       01  REL-REGISTRO PIC X(100).
+
+       WORKING-STORAGE SECTION.
+       77 WV-FILE-STATUS    PIC  X(002) VALUE "00".
+       77 WT-FILE-STATUS    PIC  X(002) VALUE "00".
+       
+       01  W-CONTADORES.
+           03 W-CT-LINHAS        PIC  9(002) VALUE 99.
+       
+       01  W-CAB1.
+           03 FILLER PIC X(100) VALUE 
+      -                          "RELATORIO VENDEDORES CADASTRADOS".
+           
+       01  W-CAB2.
+           03 FILLER PIC X(14) VALUE "COD VENDEDOR".
+           03 FILLER PIC X(13) VALUE "CPF".
+           03 FILLER PIC X(42) VALUE "NOME DO VENDEDOR".
+           03 FILLER PIC X(15) VALUE "LATITUDE".
+           03 FILLER PIC X(13) VALUE "LONGITUDE".
+
+       01  W-DET1.
+           03 W-DET-CODIGO         PIC 9(003) VALUE ZEROS.
+           03 FILLER               PIC X(011) VALUE SPACES.
+           03 W-DET-CPF            PIC 9(011) VALUE ZEROS.
+           03 FILLER               PIC X(002) VALUE SPACES.
+           03 W-DET-NOME-VENDEDOR  PIC X(040) VALUE SPACES.
+           03 FILLER               PIC X(002) VALUE SPACES.
+           03 W-DET-LATITUDE       PIC -ZZ9,99999999 VALUE ZEROS.
+           03 FILLER               PIC X(002) VALUE SPACES.
+           03 W-DET-LONGITUDE      PIC -ZZ9,99999999 VALUE ZEROS.
+       
+       01  W-SEPARADOR   PIC X(100) VALUE ALL "-".
+       
+       LINKAGE SECTION.
+       01 L-TIPO-ORDENACAO      PIC X VALUE SPACES.
+       01 L-TIPO-CLASSIFICACAO  PIC 9 VALUE ZEROS.
+       01 L-CODIGO-VENDEDOR     PIC 9(003) VALUE ZEROS.
+       01 L-NOME-VENDEDOR       PIC X(040) VALUE SPACES.
+
+       PROCEDURE DIVISION USING L-TIPO-ORDENACAO,
+                                L-TIPO-CLASSIFICACAO,
+                                L-CODIGO-VENDEDOR,
+                                L-NOME-VENDEDOR.
+       000-INCIIO.
+           IF L-TIPO-ORDENACAO EQUAL TO "D"
+              IF L-TIPO-CLASSIFICACAO EQUAL TO 2
+                 SORT ARQ-TEMP
+                      ON DESCENDING KEY TEMP-NOME-VENDEDOR
+                      INPUT PROCEDURE  IS 100-PROCESSA-ENTRADA
+                      OUTPUT PROCEDURE IS 200-PROCESSA-SAIDA
+              ELSE
+                 SORT ARQ-TEMP
+                      ON DESCENDING KEY TEMP-COD-VENDEDOR               
+                      INPUT PROCEDURE  IS 100-PROCESSA-ENTRADA
+                      OUTPUT PROCEDURE IS 200-PROCESSA-SAIDA
+              END-IF
+           ELSE
+              IF L-TIPO-CLASSIFICACAO EQUAL TO 2
+                 SORT ARQ-TEMP
+                      ON ASCENDING KEY TEMP-NOME-VENDEDOR
+                      INPUT PROCEDURE  IS 100-PROCESSA-ENTRADA
+                      OUTPUT PROCEDURE IS 200-PROCESSA-SAIDA
+              ELSE
+                 SORT ARQ-TEMP
+                      ON ASCENDING KEY TEMP-COD-VENDEDOR                
+                      INPUT PROCEDURE  IS 100-PROCESSA-ENTRADA
+                      OUTPUT PROCEDURE IS 200-PROCESSA-SAIDA
+              END-IF
+           END-IF
+
+           CALL "MENU".
+           
+       100-PROCESSA-ENTRADA.
+           OPEN INPUT  ARQ-VENDEDOR
+           READ ARQ-VENDEDOR
+
+           PERFORM 110-SELECIONA-REGISTROS
+             UNTIL WV-FILE-STATUS NOT EQUAL TO "00"
+             
+           CLOSE ARQ-VENDEDOR.
+
+       110-SELECIONA-REGISTROS.
+           IF L-CODIGO-VENDEDOR EQUAL TO ZEROS
+              IF L-NOME-VENDEDOR EQUAL TO SPACES
+                 RELEASE REG-TEMPORARIO FROM ARQ-VENDEDOR-REG       
+              ELSE
+                 IF NOME-VENDEDOR EQUAL TO L-NOME-VENDEDOR
+                    RELEASE REG-TEMPORARIO FROM ARQ-VENDEDOR-REG
+                 END-IF
+              END-IF
+           ELSE
+              IF COD-VENDEDOR EQUAL TO L-CODIGO-VENDEDOR
+                 RELEASE REG-TEMPORARIO FROM ARQ-VENDEDOR-REG
+              END-IF
+           END-IF
+       
+           READ ARQ-VENDEDOR.
+       
+       200-PROCESSA-SAIDA.
+           OPEN OUTPUT REL-VENDEDOR
+           
+           RETURN ARQ-TEMP
+           
+           PERFORM 300-IMPRIMIR-RELATORIO 
+             UNTIL WT-FILE-STATUS NOT EQUAL TO "00"
+               
+           CLOSE REL-VENDEDOR.
+       
+       300-IMPRIMIR-RELATORIO.
+           IF W-CT-LINHAS > 60
+              PERFORM 110-IMPRIMIR-CABECALHO
+           END-IF
+           
+           MOVE TEMP-COD-VENDEDOR       TO W-DET-CODIGO
+           MOVE TEMP-CPF                TO W-DET-CPF
+           MOVE TEMP-NOME-VENDEDOR      TO W-DET-NOME-VENDEDOR
+           MOVE TEMP-LATITUDE-VENDEDOR  TO W-DET-LATITUDE
+           MOVE TEMP-LONGITUDE-VENDEDOR TO W-DET-LONGITUDE
+           
+           WRITE REL-REGISTRO FROM W-DET1 AFTER 1 LINE
+           ADD 1 TO W-CT-LINHAS
+
+           RETURN ARQ-TEMP.
+       
+       110-IMPRIMIR-CABECALHO.
+           WRITE REL-REGISTRO FROM W-CAB1 AFTER PAGE
+           WRITE REL-REGISTRO FROM W-CAB2  AFTER 1 LINE
+           WRITE REL-REGISTRO FROM W-SEPARADOR  AFTER 1 LINE.
+
+       END PROGRAM REPORTVENDEDOR.
