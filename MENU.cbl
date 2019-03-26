@@ -176,22 +176,17 @@
        210-MENU-RELATORIO-CLIENTE.
            DISPLAY SUB-MENU-RELATORIO-CLIENTE
            ACCEPT  SUB-MENU-RELATORIO-CLIENTE
-           EVALUATE W-CONFIRMA
+           EVALUATE FUNCTION UPPER-CASE(W-CONFIRMA)
               WHEN 'S'
-                 CHAIN "REPORTCLIENTE" USING W-TIPO-ORDENACAO,
-                                             W-TIPO-CLASSIFICACAO,
-                                             W-CODIGO-CLIENTE,
-                                             W-RAZAO-SOCIAL
-                 PERFORM 200-SUB-MENU-RELATORIOS
-              WHEN 's'
-                 CHAIN "REPORTCLIENTE" USING W-TIPO-ORDENACAO,          
-                                             W-TIPO-CLASSIFICACAO,
-                                             W-CODIGO-CLIENTE,
-                                             W-RAZAO-SOCIAL
+                 MOVE FUNCTION UPPER-CASE(W-TIPO-ORDENACAO) 
+                   TO W-TIPO-ORDENACAO
+                 CHAIN "REPORTCLIENTE" USING 
+                       W-TIPO-ORDENACAO,
+                       W-TIPO-CLASSIFICACAO,
+                       W-CODIGO-CLIENTE,
+                       W-RAZAO-SOCIAL
                  PERFORM 200-SUB-MENU-RELATORIOS
               WHEN 'N' 
-                 PERFORM 200-SUB-MENU-RELATORIOS
-              WHEN 'n' 
                  PERFORM 200-SUB-MENU-RELATORIOS
               WHEN OTHER
                  PERFORM 210-MENU-RELATORIO-CLIENTE
@@ -200,22 +195,17 @@
        220-MENU-RELATORIO-VENDEDOR.
            DISPLAY SUB-MENU-RELATORIO-VENDEDOR
            ACCEPT  SUB-MENU-RELATORIO-VENDEDOR
-           EVALUATE W-CONFIRMA
+           EVALUATE FUNCTION UPPER-CASE(W-CONFIRMA)
               WHEN 'S'
-                 CHAIN "REPORTVENDEDOR" USING W-TIPO-ORDENACAO,
-                                              W-TIPO-CLASSIFICACAO,
-                                              W-CODIGO-VENDEDOR,
-                                              W-NOME-VENDEDOR
-                 PERFORM 200-SUB-MENU-RELATORIOS
-              WHEN 's'
-                 CHAIN "REPORTVENDEDOR" USING W-TIPO-ORDENACAO,
-                                              W-TIPO-CLASSIFICACAO,
-                                              W-CODIGO-VENDEDOR,
-                                              W-NOME-VENDEDOR
+                 MOVE FUNCTION UPPER-CASE(W-TIPO-ORDENACAO)
+                   TO W-TIPO-ORDENACAO
+                 CHAIN "REPORTVENDEDOR" USING 
+                       W-TIPO-ORDENACAO,
+                       W-TIPO-CLASSIFICACAO,
+                       W-CODIGO-VENDEDOR,
+                       W-NOME-VENDEDOR
                  PERFORM 200-SUB-MENU-RELATORIOS
               WHEN 'N' 
-                 PERFORM 200-SUB-MENU-RELATORIOS
-              WHEN 'n' 
                  PERFORM 200-SUB-MENU-RELATORIOS
               WHEN OTHER
                  PERFORM 220-MENU-RELATORIO-VENDEDOR

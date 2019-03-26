@@ -202,19 +202,12 @@
 
            DISPLAY  INCLUSAO-VENDEDOR
            ACCEPT   INCLUSAO-VENDEDOR
-           EVALUATE W-CONFIRMA
+           EVALUATE FUNCTION UPPER-CASE(W-CONFIRMA)
              WHEN 'S'
                 PERFORM 110-INCLUIR-VENDEDOR
                 CLOSE ARQ-VENDEDOR
                 PERFORM 000-INICIO
-             WHEN 's'
-                PERFORM 110-INCLUIR-VENDEDOR
-                CLOSE ARQ-VENDEDOR
-                PERFORM 000-INICIO
              WHEN 'N' 
-                CLOSE ARQ-VENDEDOR
-                PERFORM 000-INICIO
-             WHEN 'n' 
                 CLOSE ARQ-VENDEDOR
                 PERFORM 000-INICIO
              WHEN OTHER
@@ -246,17 +239,11 @@
               DISPLAY MENSAGEM-CONSULTA
               ACCEPT MENSAGEM-CONSULTA
 
-              EVALUATE W-CONFIRMA
+              EVALUATE FUNCTION UPPER-CASE(W-CONFIRMA)
                 WHEN 'S'
                    CLOSE ARQ-VENDEDOR
                    PERFORM 200-ALTERACAO
-                WHEN 's'
-                   CLOSE ARQ-VENDEDOR
-                   PERFORM 200-ALTERACAO
                 WHEN 'N'
-                   CLOSE ARQ-VENDEDOR
-                   PERFORM 000-INICIO
-                WHEN 'n'
                    CLOSE ARQ-VENDEDOR
                    PERFORM 000-INICIO
                 WHEN OTHER
@@ -267,19 +254,12 @@
               DISPLAY ALTERACAO-VENDEDOR
               ACCEPT  ALTERACAO-VENDEDOR
            
-              EVALUATE W-CONFIRMA
+              EVALUATE FUNCTION UPPER-CASE(W-CONFIRMA)
                 WHEN 'S'
                    PERFORM 210-ALTERAR-VENDEDOR
                    CLOSE ARQ-VENDEDOR
                    PERFORM 000-INICIO
-                WHEN 's'
-                   PERFORM 210-ALTERAR-VENDEDOR
-                   CLOSE ARQ-VENDEDOR
-                   PERFORM 000-INICIO
                 WHEN 'N'
-                   CLOSE ARQ-VENDEDOR
-                   PERFORM 000-INICIO
-                WHEN 'n'
                    CLOSE ARQ-VENDEDOR
                    PERFORM 000-INICIO
                 WHEN OTHER
@@ -312,17 +292,11 @@
               DISPLAY MENSAGEM-CONSULTA
               ACCEPT  MENSAGEM-CONSULTA
 
-              EVALUATE W-CONFIRMA
+              EVALUATE FUNCTION UPPER-CASE(W-CONFIRMA)
                 WHEN 'S'
                    CLOSE ARQ-VENDEDOR
                    PERFORM 300-EXCLUSAO
-                WHEN 's'
-                   CLOSE ARQ-VENDEDOR
-                   PERFORM 300-EXCLUSAO
                 WHEN 'N'
-                   CLOSE ARQ-VENDEDOR
-                   PERFORM 000-INICIO
-                WHEN 'n'
                    CLOSE ARQ-VENDEDOR
                    PERFORM 000-INICIO
                 WHEN OTHER
@@ -333,19 +307,12 @@
               DISPLAY EXCLUSAO-VENDEDOR
               ACCEPT  EXCLUSAO-VENDEDOR
            
-              EVALUATE W-CONFIRMA
+              EVALUATE FUNCTION UPPER-CASE(W-CONFIRMA)
                 WHEN 'S'
                    PERFORM 310-EXCLUIR-VENDEDOR
                    CLOSE ARQ-VENDEDOR
                    PERFORM 000-INICIO
-                WHEN 's'
-                   PERFORM 310-EXCLUIR-VENDEDOR
-                   CLOSE ARQ-VENDEDOR
-                   PERFORM 000-INICIO
                 WHEN 'N'
-                   CLOSE ARQ-VENDEDOR
-                   PERFORM 000-INICIO
-                WHEN 'n'
                    CLOSE ARQ-VENDEDOR
                    PERFORM 000-INICIO
                 WHEN OTHER
@@ -361,22 +328,14 @@
            DISPLAY IMPORTACAO-VENDEDOR
            ACCEPT  IMPORTACAO-VENDEDOR
            
-           EVALUATE W-CONFIRMA
+           EVALUATE FUNCTION UPPER-CASE(W-CONFIRMA)
               WHEN 'S'
                  IF W-LABEL-IMP EQUAL TO SPACES
                     PERFORM 400-IMPORTACAO
                  END-IF
                  PERFORM 410-IMPORTAR-VENDEDOR
                  PERFORM 000-INICIO
-              WHEN 's'
-                 IF W-LABEL-IMP EQUAL TO SPACES
-                    PERFORM 400-IMPORTACAO
-                 END-IF
-                 PERFORM 410-IMPORTAR-VENDEDOR
-                 PERFORM 000-INICIO
               WHEN 'N'
-                 PERFORM 000-INICIO
-              WHEN 'n'
                  PERFORM 000-INICIO
               WHEN OTHER
                  PERFORM 410-IMPORTAR-VENDEDOR

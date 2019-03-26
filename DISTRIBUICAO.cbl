@@ -52,11 +52,14 @@
        77 WD-FILE-STATUS         PIC  X(002) VALUE "00".
        77 W-MENOR-DISTANCIA      PIC  9(009)V9(002) VALUE 999999999.
        77 W-CALC-DISTANCIA       PIC  9(009)V9(002) VALUE ZEROS.
-       77 W-DLA                  PIC  9(009)V9(004) VALUE ZEROS.
-       77 W-DLA2                 PIC  9(009)V9(004) VALUE ZEROS.
-       77 W-DLO                  PIC  9(009)V9(004) VALUE ZEROS.
-       77 W-DLO2                 PIC  9(009)V9(004) VALUE ZEROS.
-       77 W-RAIZ2                PIC  9(009)V9(004) VALUE ZEROS.
+       77 W-LATITUDE-1           PIC S9(003)V9(008) VALUE ZEROS.
+       77 W-LATITUDE-2           PIC S9(003)V9(008) VALUE ZEROS.
+       77 W-LONGITUDE-1          PIC S9(003)V9(008) VALUE ZEROS.
+       77 W-LONGITUDE-2          PIC S9(003)V9(008) VALUE ZEROS.
+       77 W-DLA                  PIC S9(003)V9(008) VALUE ZEROS.        
+       77 W-DLO                  PIC S9(003)V9(008) VALUE ZEROS.        
+       77 W-A                    PIC S9(003)V9(008) VALUE ZEROS.        
+       77 W-C                    PIC S9(003)V9(008) VALUE ZEROS.        
 
        PROCEDURE DIVISION.
        000-INCIIO.
@@ -90,18 +93,37 @@
            READ ARQ-CLIENTE NEXT.
        
        200-LER-VENDEDOR.
-           COMPUTE W-DLA = (LATITUDE-CLIENTE 
-                         -  LATITUDE-VENDEDOR) 
-                         *  1852
+           COMPUTE W-LATITUDE-1 = LATITUDE-CLIENTE
+                                * FUNCTION PI
+                                / 180
+       
+           COMPUTE W-LATITUDE-2 = LATITUDE-VENDEDOR
+                                * FUNCTION PI
+                                / 180
 
-           COMPUTE W-DLO = (LONGITUDE-CLIENTE 
-                         -  LONGITUDE-VENDEDOR)
-                         *  1852
+           COMPUTE W-LONGITUDE-1 = LONGITUDE-CLIENTE
+                                * FUNCTION PI
+                                / 180
+                              
+           COMPUTE W-LONGITUDE-2 = LONGITUDE-VENDEDOR
+                                * FUNCTION PI
+                                / 180
 
-           COMPUTE W-DLA2 = W-DLA * W-DLA
-           COMPUTE W-DLO2 = W-DLO * W-DLO
-           COMPUTE W-RAIZ2 = W-DLA2 + W-DLO2
-           COMPUTE W-CALC-DISTANCIA = FUNCTION SQRT(W-RAIZ2)
+           COMPUTE W-DLA = W-LATITUDE-2 - (W-LATITUDE-1) 
+
+           COMPUTE W-DLO = W-LONGITUDE-2 - (W-LONGITUDE-1) 
+
+           COMPUTE W-A = FUNCTION SIN(W-DLA / 2)
+                       * FUNCTION SIN(W-DLA / 2)
+                       + FUNCTION COS(W-LATITUDE-1)
+                       * FUNCTION COS(W-LATITUDE-2)
+                       * FUNCTION SIN(W-DLO / 2)
+                       * FUNCTION SIN(W-DLO / 2)
+           
+           COMPUTE W-C = 2 * FUNCTION ATAN(FUNCTION SQRT(W-A) /
+                                           FUNCTION SQRT(1 - W-A))
+
+           COMPUTE W-CALC-DISTANCIA = 6731 * W-C * 1000
                                                     
            IF W-CALC-DISTANCIA < W-MENOR-DISTANCIA
               MOVE W-CALC-DISTANCIA TO W-MENOR-DISTANCIA
