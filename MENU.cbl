@@ -33,7 +33,7 @@
           02 LINE 07 COL 10 VALUE "[1] CADASTROS".
           02 LINE 08 COL 10 VALUE "[2] RELATORIOS".
           02 LINE 09 COL 10 VALUE "[3] EXECUTAR".
-          02 LINE 12 COL 10 VALUE "[4] SAIR DO SISTEMA".
+          02 LINE 12 COL 10 VALUE "[9] SAIR DO SISTEMA".
           02 LINE 15 COL 10 "DIGITE A OPCAO DESEJADA[.]".
           02 LINE 15 COL 34, PIC 9 TO WOPCAO AUTO.
 
@@ -48,7 +48,7 @@
           02 LINE 07 COL 10 VALUE "[1] CADASTRO DE CLIENTE".
           02 LINE 08 COL 10 VALUE "[2] CADASTRO DE VENDEDOR".
           02 LINE 09 COL 10 VALUE "[3] VOLTAR AO MENU PRINCIPAL".
-          02 LINE 12 COL 10 VALUE "[4] SAIR DO SISTEMA".
+          02 LINE 12 COL 10 VALUE "[9] SAIR DO SISTEMA".
           02 LINE 15 COL 10 "DIGITE A OPCAO DESEJADA[.]".
           02 LINE 15 COL 34, PIC 9 TO WOPCAOCAD AUTO.
 
@@ -63,7 +63,7 @@
           02 LINE 07 COL 10 VALUE "[1] RELATORIO DE CLIENTE".
           02 LINE 08 COL 10 VALUE "[2] RELATORIO DE VENDEDOR".
           02 LINE 09 COL 10 VALUE "[3] VOLTAR AO MENU PRINCIPAL".
-          02 LINE 12 COL 10 VALUE "[4] SAIR DO SISTEMA".
+          02 LINE 12 COL 10 VALUE "[9] SAIR DO SISTEMA".
           02 LINE 15 COL 10 "DIGITE A OPCAO DESEJADA[.]".
           02 LINE 15 COL 34, PIC 9 TO WOPCAOREL AUTO.
 
@@ -120,7 +120,7 @@
           02 LINE 07 COL 10 VALUE 
                            "[1] EXECUTAR DISTRIBUICAO DE CLIENTE".
           02 LINE 08 COL 10 VALUE "[2] VOLTAR AO MENU PRINCIPAL".
-          02 LINE 12 COL 10 VALUE "[4] SAIR DO SISTEMA".
+          02 LINE 12 COL 10 VALUE "[9] SAIR DO SISTEMA".
           02 LINE 15 COL 10 "DIGITE A OPCAO DESEJADA[.]".
           02 LINE 15 COL 34 PIC 9 TO WOPCAOEXEC AUTO.
 
@@ -135,7 +135,7 @@
                  PERFORM 200-SUB-MENU-RELATORIOS
               WHEN 3
                  PERFORM 300-SUB-MENU-EXECUTE
-              WHEN 4
+              WHEN 9
                  STOP RUN
               WHEN OTHER
                  PERFORM 000-INICIO
@@ -151,7 +151,7 @@
                  CHAIN "TELAVENDEDOR"
               WHEN 3
                  PERFORM 000-INICIO
-              WHEN 4
+              WHEN 9
                  STOP RUN
               WHEN OTHER
                  PERFORM 100-SUB-MENU-CADASTROS
@@ -167,7 +167,7 @@
                  PERFORM 220-MENU-RELATORIO-VENDEDOR
               WHEN 3
                  PERFORM 000-INICIO
-              WHEN 4
+              WHEN 9
                  STOP RUN
               WHEN OTHER
                  PERFORM 200-SUB-MENU-RELATORIOS
@@ -182,19 +182,19 @@
                                              W-TIPO-CLASSIFICACAO,
                                              W-CODIGO-CLIENTE,
                                              W-RAZAO-SOCIAL
-                 PERFORM 000-INICIO
+                 PERFORM 200-SUB-MENU-RELATORIOS
               WHEN 's'
                  CHAIN "REPORTCLIENTE" USING W-TIPO-ORDENACAO,          
                                              W-TIPO-CLASSIFICACAO,
                                              W-CODIGO-CLIENTE,
                                              W-RAZAO-SOCIAL
-                 PERFORM 000-INICIO
+                 PERFORM 200-SUB-MENU-RELATORIOS
               WHEN 'N' 
-                 PERFORM 000-INICIO
+                 PERFORM 200-SUB-MENU-RELATORIOS
               WHEN 'n' 
-                 PERFORM 000-INICIO
+                 PERFORM 200-SUB-MENU-RELATORIOS
               WHEN OTHER
-                 PERFORM 000-INICIO
+                 PERFORM 210-MENU-RELATORIO-CLIENTE
            END-EVALUATE.
 
        220-MENU-RELATORIO-VENDEDOR.
@@ -206,19 +206,19 @@
                                               W-TIPO-CLASSIFICACAO,
                                               W-CODIGO-VENDEDOR,
                                               W-NOME-VENDEDOR
-                 PERFORM 000-INICIO
+                 PERFORM 200-SUB-MENU-RELATORIOS
               WHEN 's'
                  CHAIN "REPORTVENDEDOR" USING W-TIPO-ORDENACAO,
                                               W-TIPO-CLASSIFICACAO,
                                               W-CODIGO-VENDEDOR,
                                               W-NOME-VENDEDOR
-                 PERFORM 000-INICIO
+                 PERFORM 200-SUB-MENU-RELATORIOS
               WHEN 'N' 
-                 PERFORM 000-INICIO
+                 PERFORM 200-SUB-MENU-RELATORIOS
               WHEN 'n' 
-                 PERFORM 000-INICIO
+                 PERFORM 200-SUB-MENU-RELATORIOS
               WHEN OTHER
-                 PERFORM 000-INICIO
+                 PERFORM 220-MENU-RELATORIO-VENDEDOR
            END-EVALUATE.
        
        300-SUB-MENU-EXECUTE.
@@ -229,10 +229,10 @@
                  CHAIN "DISTRIBUICAO"
               WHEN 2
                  PERFORM 000-INICIO
-              WHEN 4
+              WHEN 9
                  STOP RUN
               WHEN OTHER
-                 PERFORM 000-INICIO
+                 PERFORM 300-SUB-MENU-EXECUTE
            END-EVALUATE.
 
         END PROGRAM MENU.

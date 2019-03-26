@@ -18,7 +18,7 @@
                   LOCK MODE     IS MANUAL
                   FILE STATUS   IS WV-FILE-STATUS.
 
-           SELECT IMP-VENDEDOR  ASSIGN TO "IMPVENDEDOR.DAT"
+           SELECT IMP-VENDEDOR  ASSIGN TO W-LABEL-IMP
                   ORGANIZATION  IS SEQUENTIAL
                   FILE STATUS   IS WI-FILE-STATUS.
 
@@ -39,13 +39,14 @@
            03 IMP-LONGITUDE        PIC S9(003)V9(008).
 
        WORKING-STORAGE SECTION.
-       77 WOPCAO                 PIC  9      VALUE ZEROS.
-       77 W-CONFIRMA             PIC  X      VALUE SPACES.
-       77 WV-FILE-STATUS         PIC  X(002) VALUE "00".                
-       77 WI-FILE-STATUS         PIC  X(002) VALUE "00".      
-       77 W-FIM                  PIC  X      VALUE SPACES.
-       77 W-RETORNO              PIC  9(001) VALUE ZEROS.
-       77 W-CPF                  PIC  9(011) VALUE ZEROS.
+       77 WOPCAO                 PIC 9      VALUE ZEROS.
+       77 W-CONFIRMA             PIC X      VALUE SPACES.
+       77 WV-FILE-STATUS         PIC X(002) VALUE "00".                
+       77 WI-FILE-STATUS         PIC X(002) VALUE "00".      
+       77 W-FIM                  PIC X      VALUE SPACES.
+       77 W-RETORNO              PIC 9(001) VALUE ZEROS.
+       77 W-CPF                  PIC 9(011) VALUE ZEROS.
+       77 W-LABEL-IMP            PIC X(020) VALUE SPACES.               
        
        01  W-ARQ-VENDEDOR-REG.
            03 W-CODIGO-VEND      PIC  9(003) VALUE ZEROS.
@@ -161,6 +162,20 @@
           02 LINE 15 COL 10 
              "CONFIRMA A EXCLUSAO DO VENDEDOR?(S/N):".
           02 LINE 15 COL 49, PIC X TO W-CONFIRMA AUTO.      
+
+       01 IMPORTACAO-VENDEDOR AUTO.
+          02 BLANK SCREEN.
+          02 LINE 1 COL 1 VALUE "***************************************
+      -"************************************".
+          02 LINE 2 COL 21 VALUE "HBSIS - Prova COBOL".
+          02 LINE 3 COL 1 VALUE "***************************************
+      -"************************************".
+          02 LINE 04 COL 33 VALUE "IMPORTAR VENDEDOR".
+          02 LINE 07 COL 10 VALUE "NOME DO ARQUIVO DE IMPORTACAO:".
+          02 LINE 07 COL 41, PIC X(020) TO W-LABEL-IMP.
+          02 LINE 15 COL 10 
+             "CONFIRMA A IMPORTACAO?(S/N):".
+          02 LINE 15 COL 39, PIC X TO W-CONFIRMA AUTO.      
 
        PROCEDURE DIVISION.
        000-INICIO.
@@ -343,6 +358,31 @@
            DELETE ARQ-VENDEDOR RECORD.
        
        400-IMPORTACAO.
+           DISPLAY IMPORTACAO-VENDEDOR
+           ACCEPT  IMPORTACAO-VENDEDOR
+           
+           EVALUATE W-CONFIRMA
+              WHEN 'S'
+                 IF W-LABEL-IMP EQUAL TO SPACES
+                    PERFORM 400-IMPORTACAO
+                 END-IF
+                 PERFORM 410-IMPORTAR-VENDEDOR
+                 PERFORM 000-INICIO
+              WHEN 's'
+                 IF W-LABEL-IMP EQUAL TO SPACES
+                    PERFORM 400-IMPORTACAO
+                 END-IF
+                 PERFORM 410-IMPORTAR-VENDEDOR
+                 PERFORM 000-INICIO
+              WHEN 'N'
+                 PERFORM 000-INICIO
+              WHEN 'n'
+                 PERFORM 000-INICIO
+              WHEN OTHER
+                 PERFORM 410-IMPORTAR-VENDEDOR
+           END-EVALUATE.
+
+       410-IMPORTAR-VENDEDOR.
            OPEN INPUT IMP-VENDEDOR
 
            IF WI-FILE-STATUS EQUAL TO ZEROS
